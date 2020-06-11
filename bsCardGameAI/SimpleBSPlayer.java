@@ -37,7 +37,7 @@ public class SimpleBSPlayer implements BSPlayer{
 
 	
 	/**
-	 * If the number of cards played is greater than the number of cards of card_rank in hand, then call BS at 10.
+	 * If the number of cards played is greater than four minus the number of cards of the card_rank in hand, then call BS at 10.
 	 * Otherwise, call at a proportion of 2 * number of same-rank cards in hand.
 	 * @param playing_player_num - player number of the player that discarded
 	 * @param num_cards_played - number of cards that playing player discarded
@@ -48,7 +48,7 @@ public class SimpleBSPlayer implements BSPlayer{
 	@Override
 	public int report_play_get_call(int playing_player_num, int num_cards_played, int card_rank) {
 		int num_same_rank_cards = BSutil.get_cards_of_rank(hand, card_rank).size();
-		if (num_same_rank_cards > num_cards_played) {
+		if (num_same_rank_cards + num_cards_played > 4) {
 			return 10;
 		}		
 		return num_same_rank_cards * 2;

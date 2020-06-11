@@ -54,6 +54,8 @@ public class BSGame {
 			System.out.println("Starting Player: " + current_player_num);
 		}
 		
+		
+		int current_rank = 0;
 		pile.add(Card.ACE_OF_SPACES);
 		if (verbose)
 			System.out.println("Pile: " + Card.string(pile));
@@ -67,7 +69,6 @@ public class BSGame {
 		
 		
 		// take turns
-		int current_rank = 1;
 		int winner = -1;
 		
 		while (true) {
@@ -104,14 +105,17 @@ public class BSGame {
 			int largest_call = 0;
 			int calling_player_num = -1;
 			for (int i = 0; i < NUM_PLAYERS; i++) {
-				int call = players[i].report_play_get_call(current_player_num, play.size(), current_rank);
-				if (call > largest_call) {
-					largest_call = call;
-					calling_player_num = i;
+				if (i != current_player_num) {
+					int call = players[i].report_play_get_call(current_player_num, play.size(), current_rank);
+					if (call > largest_call) {
+						largest_call = call;
+						calling_player_num = i;
+					}
+					
+					if (verbose)
+						System.out.println("Player " + i + " calls " + call);
+					
 				}
-				
-				if (verbose)
-					System.out.println("Player " + i + " calls " + call);
 			}
 						
 			// make a call (if one player calls above a 0)
