@@ -1,11 +1,12 @@
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Stack;
 
 public class SimpleBSPlayer implements BSPlayer{
 
 	public ArrayList<Integer> hand;
 	public int playerNum;
-	
+	public Random random = new Random();
 	
 	
 	@Override
@@ -38,7 +39,7 @@ public class SimpleBSPlayer implements BSPlayer{
 	
 	/**
 	 * If the number of cards played is greater than four minus the number of cards of the card_rank in hand, then call BS at 10.
-	 * Otherwise, call at a proportion of 2 * number of same-rank cards in hand.
+	 * Otherwise, with probability 1/2, call at a proportion of 2 * number of same-rank cards in hand, or call 0.
 	 * @param playing_player_num - player number of the player that discarded
 	 * @param num_cards_played - number of cards that playing player discarded
 	 * @param card_rank - rank that the playing player was "supposed to" discard
@@ -50,8 +51,11 @@ public class SimpleBSPlayer implements BSPlayer{
 		int num_same_rank_cards = BSutil.get_cards_of_rank(hand, card_rank).size();
 		if (num_same_rank_cards + num_cards_played > 4) {
 			return 10;
-		}		
-		return num_same_rank_cards * 2;
+		} else if (random.nextBoolean()) {
+				return num_same_rank_cards * 2;
+		} else {
+			return 0;
+		}
 	}
 
 	@Override
