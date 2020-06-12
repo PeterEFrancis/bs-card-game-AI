@@ -4,3 +4,4 @@
 **/*.class
 .metadata
 **/*.DS_Store
+**/*.csv

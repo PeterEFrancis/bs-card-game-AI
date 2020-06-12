@@ -5,7 +5,7 @@ import java.util.Stack;
 public class Player implements BSPlayer{
 
 	public ArrayList<Integer> hand;
-	public int playerNum;
+	public int player_num;
 	public Random random = new Random();
 
 	public int type;
@@ -14,6 +14,7 @@ public class Player implements BSPlayer{
 
 	public int current_rank;
 	public int tentative_num_add_cards;
+
 
 	// only keep track of ranks
 	public Stack<Integer> known_pile;
@@ -32,9 +33,9 @@ public class Player implements BSPlayer{
 
 
 	@Override
-	public void start_game(ArrayList<Integer> hand, int playerNum) {
+	public void start_game(ArrayList<Integer> hand, int player_num) {
 		this.hand = hand;
-		this.playerNum = playerNum;
+		this.player_num = player_num;
 		this.possible_pile = new Stack<Integer>();
 		this.known_pile = new Stack<Integer>();
 		this.known_pile.add(Card.ACE);
@@ -60,22 +61,34 @@ public class Player implements BSPlayer{
 	 */
 	@Override
 	public ArrayList<Integer> get_play(int current_rank) {
-		ArrayList<ArrayList<Integer>> potential_discard_sets = BSutil.get_potential_discard_sets(this.hand);
-		double max_val = -Double.MAX_VALUE;
-		ArrayList<Integer> best_discard_set = new ArrayList<Integer>();
-		for (ArrayList<Integer> potential_discard_set : potential_discard_sets) {
-			// add ranks to known pile
-			known_pile.addAll(potential_discard_set);
-			BSutil.remove_cards(hand, potential_discard_set);
-			double val = BlackBox.prob_of_winning(this);
-			if (max_val < val) {
-				max_val = val;
-				best_discard_set = potential_discard_set;
+		if (version == BlackBox.SIMPLE) {
+			ArrayList<Integer> cards = BSutil.get_cards_of_rank(hand, current_rank);
+			if (cards.isEmpty()) {
+				cards.add(hand.get(0));
 			}
-			BSutil.remove_cards(known_pile, potential_discard_set);
-			hand.addAll(potential_discard_set);
+			BSutil.remove_cards(hand, cards);
+			known_pile.addAll(cards);
+			return cards;
 		}
-		return best_discard_set;
+		else {
+			ArrayList<ArrayList<Integer>> potential_discard_sets = BSutil.get_potential_discard_sets(this.hand);
+			double max_val = -Double.MAX_VALUE;
+			ArrayList<Integer> best_discard_set = new ArrayList<Integer>();
+			for (ArrayList<Integer> potential_discard_set : potential_discard_sets) {
+				// add ranks to known pile
+				known_pile.addAll(potential_discard_set);
+				BSutil.remove_cards(hand, potential_discard_set);
+				double val = BlackBox.prob_of_winning(this);
+				if (max_val < val) {
+					max_val = val;
+					best_discard_set = potential_discard_set;
+				}
+				BSutil.remove_cards(known_pile, potential_discard_set);
+				hand.addAll(potential_discard_set);
+			}
+			known_pile.addAll(best_discard_set);
+			return best_discard_set;
+		}
 	}
 
 
@@ -83,6 +96,14 @@ public class Player implements BSPlayer{
 
 	@Override
 	public boolean report_play_get_call(int playing_player_num, int num_cards_played, int card_rank) {
+		if (version == BlackBox.SIMPLE) {
+			int num_same_rank_cards = BSutil.get_cards_of_rank(hand, card_rank).size();
+			if (num_same_rank_cards + num_cards_played > 4 || (random.nextBoolean() && random.nextBoolean())) {
+				return true;
+			} else {
+				return false;
+			}
+		}
 		this.tentative_num_add_cards = num_cards_played;
 		this.current_rank = card_rank;
 		return BlackBox.shouldCall(this);

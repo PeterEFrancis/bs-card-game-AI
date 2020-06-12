@@ -39,7 +39,7 @@ public class SimpleBSPlayer implements BSPlayer{
 
 	/**
 	 * If the number of cards played is greater than four minus the number of cards of the card_rank in hand, then call BS.
-	 Otherwise call at 25%.
+	 * Otherwise call at 25%.
 	 * @param playing_player_num - player number of the player that discarded
 	 * @param num_cards_played - number of cards that playing player discarded
 	 * @param card_rank - rank that the playing player was "supposed to" discard
