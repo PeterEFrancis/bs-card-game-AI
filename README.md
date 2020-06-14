@@ -14,11 +14,9 @@ At the beginning of a game, the 4 players are dealt 13 cards each. The first pla
 
 ### TODO:
 
-- [ ] find good features
-- [ ] make collection capabilities
+- [ ] find better features
+- [X] make collection capabilities
 - [ ] make BlackBox evaluation functions
-- [ ] Do regression
-- [ ] Win!
 
 
 
