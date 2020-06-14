@@ -3,7 +3,7 @@ import java.util.Stack;
 
 public interface BSPlayer {
 
-	public void start_game(ArrayList<Integer> hand, int playerNum);
+	public void start_game(ArrayList<Integer> hand, int playerNum, int starting_player_num);
 
 	public void add_to_hand(Stack<Integer> cards);
 

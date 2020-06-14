@@ -24,10 +24,10 @@ At the beginning of a game, the 4 players are dealt 13 cards each. The first pla
 
 
 ### Possible Features
-- current player num
-- number of different ranks in your hand
+- **current player num**
+- **number of different ranks in your hand**
 - "overlap" of ranks in your hand and your future required discard ranks
-- size of your hand
-- size of the pile (known + possible)
+- **size of your hand**
+- **size of the pile (known + possible)**
 - cards in pile that overlap with your future required discard ranks
 - minimum number of turns so that if no one called, you would be able to discard truthfully on your last turn

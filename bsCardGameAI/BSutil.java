@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,9 +61,9 @@ public class BSutil {
 		return potential_discard_sets;
 	}
 
-//	⊂_ヽ
+//	 ⊂_ヽ
 //	　 ＼＼
-//	　　 ＼( ͡° ͜ʖ ͡°)
+//	　　＼( ͡° ͜ʖ ͡°)
 //	　　　 >　⌒ヽ
 //	　　　/ 　 へ＼
 //	　　 /　　/　＼＼
@@ -71,10 +72,10 @@ public class BSutil {
 //	　 /　/|
 //	　(　(ヽ
 //	　|　|、＼
-//	　| 丿 ＼ ⌒)
+//	　| 丿 ＼  ⌒
 //	　| |　　) /
-//	ノ )　　Lﾉ
-//	(_／#tada
+//	 ノ )　　Lﾉ
+//	(_／ #tada
 
 
 	public static void remove_cards(List<Integer> cards, ArrayList<Integer> to_remove) {
@@ -89,29 +90,132 @@ public class BSutil {
 		return set.size();
 	}
 
-
-
-
-
-	public static double[] calculate_discard_features(Player player) {
+	public static void print(int[] num_cards_per_rank, Integer[] order) {
+		System.out.print("[");
+		for (int i = 0; i < order.length; i++) {
+			System.out.print(num_cards_per_rank[order[i]]);
+			if (i != order.length - 1) {
+				System.out.print(" ");
+			}
+		}
+		System.out.print("]\n");
+	}
+	
+	
+	public static int get_min_turns_min_bluffs(ArrayList<Integer> cards, int current_rank) {
+		Integer[] order = new Integer[Card.NUM_RANKS];
+		Integer r = current_rank;
+		for (int i = 0; i < Card.NUM_RANKS; i++) {
+			order[i] = r;
+			r = (r + BSGame.NUM_PLAYERS) % Card.NUM_RANKS;
+		}
 		
+		int[] num_cards_per_rank = new int[Card.NUM_RANKS];
+		for (Integer c : cards) {
+			num_cards_per_rank[c]++;
+		}
+
+		int i = Card.NUM_RANKS - 1;
+		while (i > 0) {
+
+			while (num_cards_per_rank[order[i]] != 0) {
+				
+				int first_zero = -1;
+				for (int j = 0; j < i - 1; j++) {
+					if (num_cards_per_rank[order[j]] == 0) {
+						first_zero = j;
+						break;
+					}
+				}
+				
+				if (first_zero == -1) { // there is no zero to the left of i -> we are done!
+					i = 1;
+					break;
+				} else if (first_zero == i - 1) { // i needs to be moved to another discard (so the last discard isn't a bluff)
+					num_cards_per_rank[order[i]]--;
+					num_cards_per_rank[order[0]] -= 0.5;
+				} else { // i can be moved to first_zero
+					num_cards_per_rank[order[i]]--;
+					num_cards_per_rank[order[first_zero]]--;				
+				}
+			
+			}
+			
+			i--;
+		}
+
+		int min_turns = 0;
+
+		for(Integer current_turn : num_cards_per_rank) {
+			if (current_turn != 0){
+				min_turns++;
+			}
+		}
+
+		return min_turns;
+	}
+
+	
+	public static int get_min_other_player_hand_size(int player_num, int[] player_hand_sizes) {
+		int min = Integer.MAX_VALUE;
+		for (int pn = 0; pn < BSGame.NUM_PLAYERS; pn++) {
+			int s = player_hand_sizes[pn];
+			if (pn != player_num && s < min) {
+				min = s;
+			}
+		}
+
+		return min;
+	}
+
+
+	public static double get_avg_other_player_hand_size(int player_num, int[] player_hand_sizes) {
+		double avg = 0;
+		for (int pn = 0; pn < BSGame.NUM_PLAYERS; pn++) {
+			if (pn != player_num) {
+				avg += player_hand_sizes[pn];
+			}
+		}
+		return avg / (BSGame.NUM_PLAYERS - 1);
+	}
+	
+	public static int get_prod_other_player_hand_size(int player_num, int[] player_hand_sizes) {
+		int prod = 1;
+		for (int pn = 0; pn < BSGame.NUM_PLAYERS; pn++) {
+			if (pn != player_num) {
+				prod *= player_hand_sizes[pn];
+			}
+		}
+		return prod;
+	}
+	
+	public static double[] calculate_discard_features(Player player) {
+
 		int player_num = player.player_num;
 		int hand_size = player.hand.size();
 		int pile_size = player.known_pile.size() + player.possible_pile.size();
 		int num_hand_ranks = get_num_ranks(player.hand);
 		int num_possible_pile_ranks = get_num_ranks(player.known_pile) + get_num_ranks(player.possible_pile);
-
+		int min_turns_min_bluffs = get_min_turns_min_bluffs(player.hand, player.current_rank);
+		int min_other_player_hand_size = get_min_other_player_hand_size(player.player_num, player.player_hand_sizes);
+		double avg_other_player_hand_size = get_avg_other_player_hand_size(player.player_num, player.player_hand_sizes);
+		int prod_other_player_hand_size = get_prod_other_player_hand_size(player.player_num, player.player_hand_sizes);
+		
 		return new double[] {
 				player_num,
 				hand_size,
 				pile_size,
 				num_hand_ranks,
-				num_possible_pile_ranks
+				num_possible_pile_ranks,
+				min_turns_min_bluffs,
+				min_other_player_hand_size,
+				avg_other_player_hand_size,
+				prod_other_player_hand_size
 		};
 	}
 
 
-	
+
 
 
 
@@ -119,13 +223,16 @@ public class BSutil {
 
 		ArrayList<Integer> cards = new ArrayList<>();
 		cards.add(0);
-		cards.add(13);
-		cards.add(26);
 		cards.add(1);
-		cards.add(14);
+		cards.add(0);
+		cards.add(1);
+		cards.add(1);
 		cards.add(2);
-		for (ArrayList<Integer> set : get_potential_discard_sets(cards))
-			System.out.println(set);
+//		for (ArrayList<Integer> set : get_potential_discard_sets(cards))
+//			System.out.println(set);
+
+		int current_turn = 2;
+		System.out.println(get_min_turns_min_bluffs(cards, current_turn));
 
 }
 
